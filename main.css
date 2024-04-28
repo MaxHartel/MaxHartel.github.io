@@ -22,7 +22,7 @@ body {
     text-align: center;
     line-height: 1.6;
     padding: 20px;
-    background-image: url('ProfBackground.png'); /* Path to your image */
+    background-image: url("images/ProfBackground.png"); /* Path to your image */
     background-size: cover; /* Cover ensures the image covers the entire viewport */
     background-position: center; /* Center the image on the page */
     background-attachment: fixed; /* Optional: The image will not scroll with the page */
