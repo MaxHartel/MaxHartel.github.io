@@ -14,6 +14,73 @@ body {
     background-attachment: fixed; /* Optional: The image will not scroll with the page */
     background-repeat: no-repeat; /* Prevents the image from repeating */
 }
+
+nav ul li a {
+    display: flex;
+    flex-direction: column; /* Stack image and text */
+    align-items: center; /* Center-align items */
+    text-decoration: none;
+    color: white; /* White text */
+    padding: 10px;
+    border: 1px solid white; /* Optional border */
+    border-radius: 5px; /* Rounded corners for buttons */
+}
+
+nav ul li a img {
+    vertical-align: middle; /* Align image vertically */
+    margin-right: 8px; /* Space between image and text */
+    width: 35px; /* Width of the image, adjust as needed */
+    height: 35px; /* Height of the image, adjust as needed */
+    border-radius: 10px; /* Gives the image rounded corners */
+    /* Use a percentage to make it fully round, or use pixels for slight rounding */
+}
+
+nav ul li a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+body {
+    padding-left: 100px; /* Adjust based on header width to avoid content overlap */
+}
+
+#sidebar {
+    position: fixed; /* Sticky position */
+    display: flex; /* Enable flexbox */ 
+    top: 0; /* Align top */
+    left: 0; /* Align left */
+    width: 100px; /* Width of the sidebar */
+    height: 100vh; /* Full height of the viewport */
+    background-color: #230e0ede; /* Background color of the sidebar */
+    z-index: 10; /* Stacks on top */
+}
+
+#sidebar ul {
+    list-style-type: none; /* Remove default list style */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margins */
+}
+
+#sidebar ul li {
+    margin-top: 5px; /* Adjust the value as needed for spacing above the button */
+    margin-bottom: 5px; /* Adjust the value as needed for spacing below the button */
+}
+
+#sidebar ul li a {
+    display: flex; /* Enable flexbox */ 
+    padding: 10px; /* Spacing inside each link */
+    color: #fff; /* Text color */
+    text-decoration: none; /* No underline */
+    border-bottom: 3px solid rgb(18, 50, 179) /* Separator between buttons */
+}
+
+#sidebar ul li a img {
+    vertical-align: middle; /* Align image with text */
+    margin-right: 8px; /* Space between image and text */
+    border-radius: 5px; /* Rounded corners for images */
+    width: 24px; /* Image width */
+    height: 24px; /* Image height */
+}
 .container {
     width: 80%;
     margin: auto;
