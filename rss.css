@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    color: #333;
+    font-family: Arial, sans-serif;
+    background-color: black;  /* Sets the background color to black */
+    text-align: center;
+    line-height: 1.6;
+    padding: 20px;
+    background-image: url('images/ProfBackground.png'); /* Path to your image */
+    background-size: cover; /* Cover ensures the image covers the entire viewport */
+    background-position: center; /* Center the image on the page */
+    background-attachment: fixed; /* Optional: The image will not scroll with the page */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+}
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px 0 rgba(0,0,0,0.1);
+}
+img {
+    max-width: 100%;
+    display: block;
+    margin: 20px 0;
+}
+h1, h2 {
+    color: #333;
+}
+p {
+    margin: 20px 0;
+}

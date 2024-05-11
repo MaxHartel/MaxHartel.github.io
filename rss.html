@@ -3,57 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="rss.css" rel="stylesheet" type="text/css"/>
     <title>Project Report</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background: #f4f4f4;
-            color: #333;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-            background: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px 0 rgba(0,0,0,0.1);
-        }
-        img {
-            max-width: 100%;
-            display: block;
-            margin: 20px 0;
-        }
-        h1, h2 {
-            color: #333;
-        }
-        p {
-            margin: 20px 0;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <h1>Reverse Stock Split Trading Bot:</h1>
-        
-        <p>This is an introductory paragraph of the project report. Here, you can outline the purpose of the report and provide a brief overview of what the project entails.</p>
-        
-        <img src="path/to/your/image1.jpg" alt="Descriptive Alt Text">
-        <p>Here is a description or analysis that relates to the above image. This text can elaborate on the image's context and its relevance to the project.</p>
 
-        <h2>Section Title</h2>
-        <p>This section of the report might detail specific aspects of the project, such as methodologies employed, data collected, or analysis conducted.</p>
+        <h2>Project Overview</h2>
+
+        <img src="images/6monthsProf.png" alt="Yearly_Revenue img">
+        <p>Revenue From the First 6 months of running the RSS Bot</p>
+
+
+        <p>The reverse stock split trading bot is a project that can run fully automated without human intervention to generate passive income for the user. The bot uses web automation tools like puppeteer to interact with the online trading platforms of popular brokerage firms such as Schwab, Fidelity, and Robinhood. The bot focuses exclusively on finding and trading stocks where their company is about to perform a reverse stock split. There are two main functions that the bot will carry out for the user, buying the stock before the split occurs, and selling the stock once it has hit a target price. The bot will perform both of these functions on a regular automated schedule without the need for any user intervention.</p>
+        <p> When the bot performs its buy function, it will start by utilizing a web scraper I have built for this project. It will scour the internet for information on when the next reverse stock split of a publicly traded company will occur. A company is required to release information publicly 24 hours in advance if they are considering performing such an action so their shareholders can be aware of what is going on, so naturally this information is available online as well. There are even public forums and calendar-type websites dedicated to keeping track of this information and putting it all in one convenient place. Once the bot has conducted its research and is at least 90% sure that the reverse stock split will occur, it will then utilize a 3rd-Party API that I have constructed using web automation tools, and purchase the shares on the user's account through a brokerage platform of the user's choice. The splits are not always announced exactly 24 hours in advance, so the bot will perform this research every hour on days where the stock market is open to ensure that it capitalizes on as many splits as possible. Right now it is averaging 5 splits found a week, which is on equal pace with the most popular forums out there for this purpose. </p>
+        <p>The other main function that the bot carries out is the selling of user shares once they have hit the target price. This will be discussed more later, but one of the main purposes of a company performing a reverse stock split is to raise the price of their shares above the $1.00 mark so that they can be listed on a major exchange. So the bot will once more untilize the 3rd-Party API I have created to scan the current holding of the user for stock that have split and climbed over the $1.00 mark in market value. Once the split has been performed, further profit is no longer overwhelmingly likely, so the bot will sell these shares to net the profit it has guarenteed so far, and not attempt to persue further gains. With the cutoff price being only one dollar, it may seem like there is not much profit to be found here, but thanks to the speed and power of automation, if something can be done once, it can be done many times very quickly, and the profits follow suit.  </p>
+
+        <img src="images/transRatio.png" alt="transRatio.png">
+        <p>The percentage of profitable trades the bot has made is far in the green</p>
+
+        <h2>What is a Reverse Stock Split?</h2>
         
-        <img src="path/to/your/image2.jpg" alt="Descriptive Alt Text">
-        <p>Further explanation or notes related to the second image can be added here. This could be insights derived from the data or relevant project outcomes.</p>
+        <p>A reverse stock split is a corporate action where a company decreases the number of its outstanding shares and increases the share price proportionally. This is often done without changing the overall market capitalization of the company. For example, in a 1-for-10 reverse stock split, a shareholder who owned 100 shares priced at $1 each would end up owning 10 shares priced at $10 each after the split. Overall, a reverse stock split is used primarily as a tool to manage the perceptions and administrative aspects of a company's stock, rather than as a means to directly alter the company’s underlying financial health.</p>
+
+        <p><strong>Here are the main characteristics of a reverse stock split:</strong></p>
+
+        <ul>
+            <li><strong>Reduction in Shares:</strong> The total number of shares outstanding is reduced by a specific ratio, such as 1-for-5, 1-for-10, etc.
+            </li>
+            <li><strong>Increase in Share Price:</strong> The price per share increases proportionally to the reduction in the number of shares. This adjustment is made to reflect the reduced number of shares while maintaining the company's market capitalization.</li>
+            <li><strong>Neutral Impact on Market Cap:</strong> Ideally, the market capitalization of the company (the total value of all shares) remains the same immediately after the reverse split, as the increase in share price offsets the decrease in the number of shares.</li>
+        </ul>
         
-        <h2>Conclusion</h2>
-        <p>The conclusion summarizes the project outcomes, reflects on the objectives, and may propose future actions or recommendations based on the findings of the project.</p>
+        <img src="images/saglr.png" alt="Descriptive Alt Text">
+        <p>This is the gain/loss ratio of the trades placed on an average account the bot manages since the start of the project</p>
+
+        <h2>Why are Reverse Stock Splits performed?</h2>
+        <p>A company might perform a reverse stock split for several reasons, often related to improving the stock's market perception or meeting regulatory requirements:</p>
+<ul>
+    <li><strong>Boost Share Price:</strong> A reverse stock split reduces the number of shares outstanding, which typically results in an increase in the price per share. This can make the stock appear more valuable or more stable, potentially attracting more investors.</li>
+    <li><strong>Meet Exchange Listing Requirements:</strong> Many stock exchanges have minimum share price requirements. If a company’s stock price falls too low, it risks being delisted. A reverse stock split can increase the share price to comply with these minimums.</li>
+    <li><strong>Improve Marketability:</strong> Higher priced stocks are sometimes seen as more credible and stable by investors. By increasing the stock price, a reverse stock split can enhance the stock's appeal.</li>
+    <li><strong>Reduce Administrative Costs:</strong> With fewer shares outstanding, a company may lower costs related to dividends and shareholder communications.</li>
+    <li><strong>Avoid Perception of Financial Distress:</strong> Companies with very low share prices are often perceived as being in financial distress. Increasing the share price through a reverse stock split can help mitigate this perception.</li>
+</ul>
+<p>Despite these potential benefits, reverse stock splits can also be viewed negatively by the market, as they might signal that a company has been underperforming. Therefore, the impact of a reverse stock split can vary based on the specific context and market conditions.</p>
+
+        
+        <img src="images/GainLossChart.png" alt="images/GainLossChart.png">
+        <p>This a chart of the realized gain/loss of every trade the bot has made on an average account it manages, scored by percent gain</p>
+        
+        <h2>Where does the money come from?</h2>
+        <p>The majority of the profit in this project is made through the rounding up of fractional shares we own after a RSS occurs. When a reverse stock split occurs, any fractional shares that result from the consolidation of the existing shares can pose an issue both for the company and the shareholders. Many brokerages will simply round the shareholder up to the nearest full share instead of dealing with the issue. Here are some reasons why a brokerage firm might round up these fractional shares to the nearest whole number after a reverse stock split:</p>
+        <ul>
+            <li><strong>Simplification of Ownership:</strong> Fractional shares can complicate both the brokerage's and the company's record-keeping. Rounding up fractional shares to whole shares simplifies the ownership records, making it easier to manage accounts.</li>
+            <li><strong>Avoiding Small Dollar Transactions:</strong> Dealing with fractional shares can be inefficient, especially if the monetary value of the fraction is very low. By rounding up, brokerages can avoid the need to handle these small transactions, which might not be cost-effective.</li>
+            <li><strong>Regulatory or Policy Compliance:</strong> Some brokerage firms might have policies or agreements that specify rounding up as the method for handling fractional shares resulting from corporate actions like reverse splits. This can also align with the corporate policies of the issuing company.</li>
+            <li><strong>Market Practice and Uniformity:</strong> Rounding up fractional shares to whole shares is often a common market practice following reverse splits, providing a standard approach that aligns with what investors might expect in such scenarios.</li>
+        </ul>
+        <p>These actions not only help maintain a positive relationship with clients but also ensure that administrative processes remain streamlined and cost-effective.</p>
+
 
         <img src="path/to/your/image3.jpg" alt="Descriptive Alt Text">
         <p>Final thoughts or additional commentary regarding the last image. This could connect back to the overall theme or objective of the project.</p>
+
+        <h2>Future Plans for the Project:</h2>
+        <p>...</p>
+    
     </div>
 </body>
 </html>
