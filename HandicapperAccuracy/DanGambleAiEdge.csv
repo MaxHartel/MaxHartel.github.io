@@ -1,0 +1,125 @@
+date,player_name,stat_projection,confidence_score,actual_statistic,Hit
+2025-01-15,Bam Adebayo,8+ REBOUNDS,9.46,10 REBOUNDS,1
+2025-01-15,Amen Thompson,3+ ASSISTS,8.78,9 ASSISTS,1
+2025-01-15,Zach LaVine,25+ POINTS,8.66,15 POINTS,0
+2025-01-15,Jaren Jackson Jr,20+ POINTS,8.54,22 POINTS,1
+2025-01-15,Keldon Johnson,10+ POINTS,8.41,7 POINTS,0
+2025-01-15,Jalen Green,20+ POINTS,8.36,34 POINTS,1
+2025-01-15,Dyson Daniels,4+ REBOUNDS,8.21,8 REBOUNDS,1
+2025-01-15,Dillon Brooks,10+ POINTS,8.17,6 POINTS,0
+2025-01-15,LaMelo Ball,7+ ASSISTS,7.77,9 ASSISTS,1
+2025-01-15,Klay Thompson,3+ REBOUNDS,7.43,1 REBOUND,0
+2025-01-17,Nicolas Claxton,5+ REBOUNDS,9.62,8,1
+2025-01-17,LaMelo Ball,7+ ASSISTS,8.89,9,1
+2025-01-17,Dejounte Murray,6+ ASSISTS,8.71,6,0
+2025-01-17,Nikola Jokic,12+ REBOUNDS,8.51,12,0
+2025-01-17,Miles Bridges,7+ REBOUNDS,8.47,4,0
+2025-01-17,LeBron James,20+ POINTS,8.41,29,1
+2025-01-17,Tyler Herro,20+ POINTS,8.27,22,1
+2025-01-17,Trey Murphy III,15+ POINTS,8.11,19,1
+2025-01-17,Devin Vassell,4+ REBOUNDS,7.83,2,0
+2025-01-20,Dejounte Murray,6+ ASSISTS,9.33,11,1
+2025-01-20,Keyonte George,3+ REBOUNDS,9.17,4,1
+2025-01-20,Nikola Vucevic,2+ ASSISTS,8.86,4,1
+2025-01-20,Walker Kessler,10+ REBOUNDS,8.66,12,1
+2025-01-20,Josh Hart,10+ POINTS,8.34,14,1
+2025-01-20,Jalen Johnson,15+ POINTS,8.28,11,0
+2025-01-20,Jayson Tatum,20+ POINTS,7.83,22,1
+2025-01-20,De'Andre Hunter,15+ POINTS,7.71,17,1
+2025-01-20,Norman Powell,20+ POINTS,7.69,27,1
+2025-01-20,Jaden McDaniels,10+ POINTS,7.48,8,0
+2025-01-22,Tobias Harris,2+ ASSISTS,9.43,1,0
+2025-01-22,Jalen Williams,5+ ASSISTS,9.03,5,1
+2025-01-22,Miles Bridges,15+ POINTS,8.91,17,1
+2025-01-22,Shai Gilgeous-Alexander,6+ ASSISTS,8.59,5,0
+2025-01-22,Tim Hardaway Jr.,10+ POINTS,8.47,3,0
+2025-01-22,Ausar Thompson,4+ REBOUNDS,7.99,1,0
+2025-01-22,Julius Randle,15+ POINTS,7.78,16,1
+2025-01-22,Kevin Durant,6+ REBOUNDS,7.54,6,1
+2025-01-22,John Collins,5+ REBOUNDS,7.49,12,1
+2025-01-22,Kevin Durant,25+ POINTS,6.76,24,0
+2025-01-29,Ivica Zubac,10+ POINTS,9.39,21,1
+2025-01-29,Miles Bridges,3+ ASSISTS,9.02,1,0
+2025-01-29,Kristaps Porzingis,15+ POINTS,8.89,34,1
+2025-01-29,Christian Braun,10+ POINTS,8.51,9,0
+2025-01-29,Jakob Poeltl,8+ REBOUNDS,8.42,8,1
+2025-01-29,Zion Williamson,20+ POINTS,8.29,24.6,1
+2025-01-29,Nikola Jovic,4+ REBOUNDS,8.22,3,0
+2025-01-29,Derrick White,3+ REBOUNDS,8.04,1,0
+2025-01-29,Isaiah Hartenstein,10+ REBOUNDS,7.11,18,1
+2025-01-30,Franz Wagner,5+ ASSISTS,8.65,2,0
+2025-01-30,Max Strus,3+ REBOUNDS,8.46,2,0
+2025-01-30,Jalen Green,3+ ASSISTS,8.08,5,1
+2025-01-30,Amen Thompson,15+ POINTS,8.06,21,1
+2025-01-30,Rui Hachimura,3+ REBOUNDS,7.88,6,1
+2025-01-30,Rudy Gobert,10+ POINTS,7.62,16,1
+2025-01-30,Paolo Banchero,7+ REBOUNDS,7.50,5,0
+2025-01-30,Desmond Bane,15+ POINTS,7.31,24,1
+2025-02-03,Wendell Carter Jr.,5+ Rebounds,9.23,00,1
+2025-02-03,Trey Murphy III,3+ Assists,8.85,00,1
+2025-02-03,Deni Avdija,3+ Assists,8.65,00,1
+2025-02-03,John Collins,15+ Points,8.46,00,1
+2025-02-03,Tyrese Haliburton,7+ Assists,8.27,00,0
+2025-02-03,Malik Beasley,15+ Points,8.08,00,1
+2025-02-03,Gilgeous-Alexander,30+ Points,7.88,00,1
+2025-02-03,Kevin Durant,5+ Rebounds,7.69,00,1
+2025-02-03,Isaiah Collier,5+ Points,7.32,00,1
+2025-02-03,Franz Wagner,20+ Points,7.31,00,1
+2025-02-03,Scottie Barnes,15+ Points,9.03,23,1
+2025-02-03,Immanuel Quickley,10+ Points,8.84,9,0
+2025-02-03,Norman Powell,20+ Points,8.30,20,1
+2025-02-03,Nikola Jovic,3+ Assists,8.26,02,0
+2025-02-03,Tyler Herro,5+ Rebounds,7.73,08,1
+2025-02-03,Deni Avdija,3+ Assists,7.65,01,0
+2025-02-03,Patrick Williams,3+ Rebounds,7.52,7,1
+2025-02-03,Derrick Jones Jr.,3+ Rebounds,7.31,02,0
+2025-02-03,Jaylen Brown,20+ Points,7.22,16,0
+2025-02-03,Bam Adebayo,15+ Points,7.10,23,1
+2025-02-07,Donovan Mitchell,5+ Assists,8.51,05,1
+2025-02-07,Darius Garland,20+ Points,7.90,23,1
+2025-02-07,Devin Booker,3+ Rebounds,7.50,6,1
+2025-02-07,Kelly Oubre Jr.,5+ Rebounds,7.31,11,1
+2025-02-07,Walker Kessler,10+ Rebounds,7.28,22,1
+2025-02-07,Gilgeous-Alexander,30+ Points,7.15,25,0
+2025-02-07,Isaiah Hartenstein,10+ Rebounds,7.11,6,0
+2025-02-07,Isaiah Collier,10+ Points,7.02,15,1
+2025-02-07,Damian Lillard,7+ Assists,6.93,10,1
+2025-02-12,Josh Hart,5+ Assists,8.90,6,1
+2025-02-12,Austin Reaves,15+ Points,8.47,15,1
+2025-02-12,Malik Monk,3+ Rebounds,8.44,04,1
+2025-02-12,Jalen Duren,10+ Points,8.31,16,1
+2025-02-12,Isaiah Collier,7+ Assists,8.26,09,1
+2025-02-12,Malik Beasley,15+ Points,8.11,14,0
+2025-02-12,Jaylin Williams,5+ Rebounds,7.93,6,1
+2025-02-12,Kelly Oubre Jr.,5+ Rebounds,7.87,3,0
+2025-02-12,Domantas Sabonis,15+ Points,7.71,16,1
+2025-02-12,Jamal Murray,5+ Assists,7.48,5,1
+2025-02-21,Bam Adebayo,3+ Assists,9.42,1,0
+2025-02-21,Franz Wagner,20+ Points,8.85,25,1
+2025-02-21,Jalen Duren,10+ Points,8.43,21,1
+2025-02-21,Darius Garland,15+ Points,8.25,9,0
+2025-02-21,Isaiah Collier,4+ Rebounds,8.02,3,0
+2025-02-21,Kel’el Ware,7+ Rebounds,7.89,6,0
+2025-02-21,Trey Murphy,4+ Assists,7.71,6,1
+2025-02-21,Moses Moody,10+ Points,7.53,22,1
+2025-02-21,Anthony Edwards,5+ Rebounds,7.44,4,0
+2025-02-24,Bilal Coulibaly,3+ Assists,8.53,2,0
+2025-02-24,Nicolas Claxton,10+ Points,8.27,08,0
+2025-02-24,Keon Johnson,4+ Rebounds,8.20,2,0
+2025-02-24,Tyler Herro,20+ Points,7.95,11,0
+2025-02-24,Mike Conley,2+ Rebounds,7.89,0,0
+2025-02-24,Domantas Sabonis,12+ Rebounds,7.82,10,0
+2025-02-24,Bam Adebayo,15+ Points,7.73,14,0
+2025-02-24,Keegan Murray,10+ Points,7.72,10,1
+2025-02-24,Tyrese Haliburton,8+ Assists,7.65,15,1
+2025-02-24,DeMar DeRozan,3+ Rebounds,7.58,7,1
+2025-03-04,Tyrese Haliburton,15+ Points,9.23,28,1
+2025-03-04,Nicolas Claxton,8+ Points,9.04,6,0
+2025-03-04,Darius Garland,5+ Assists,8.55,7,1
+2025-03-04,Paolo Banchero,4+ Assists,8.45,8,1
+2025-03-04,Mike Conley,5+ Points,8.08,12,1
+2025-03-04,Dyson Daniels,5+ Rebounds,7.90,9,1
+2025-03-04,Cam Thomas,3+ Rebounds,7.87,1,0
+2025-03-04,James Harden,5+ Rebounds,7.83,6,1
+2025-03-04,OG Anunoby,15+ Points,7.72,29,1
+
