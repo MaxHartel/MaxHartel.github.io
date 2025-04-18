@@ -79,6 +79,7 @@ def roundRobinOptimizer(prob_success, total_picks, odds):
 # ------------------------------
 
 def analyze_all_splits(pick_list):
+    print(pick_list)
     if not pick_list or len(pick_list) < 2:
         return None, None
 

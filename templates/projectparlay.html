@@ -60,6 +60,59 @@
             max-width: 100%; /* ensures it wraps instead of overflowing */
             padding-top: 10px;
         }
+
+        .pick-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pick-button {
+            background-color: #d9c68f;
+            padding: 10px;
+            border: 1px solid black;
+            position: relative;
+            width: 70%;
+            min-width: 400px;
+            display: flex;
+            align-items: center;
+            font-family: monospace;
+            font-size: 14px;
+            justify-content: space-between;
+        }
+
+        .bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            width: 100%;
+            display: flex;
+        }
+
+        .bar {
+            height: 100%;
+        }
+
+        .bar.purple {
+            background-color: purple;
+        }
+
+        .bar.gold {
+            background-color: gold;
+        }
+
+        .pick-text {
+            width: 100%;
+            padding-right: 10px;
+        }
+
+        .edit-btn, .delete-btn {
+            margin-left: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
     </style>
 </head>
 <body>
@@ -70,7 +123,14 @@
         <button onclick="updateAccuracy()">Update</button>
     </div>
 
-    <h2>Create Python Object</h2>
+    <div style="margin-top: 10px;">
+        <label for="totalCapitalInput"><strong>Total Capital ($):</strong></label>
+        <input type="number" id="totalCapitalInput" placeholder="Enter total bankroll" style="margin-left: 10px; width: 150px;">
+    </div>
+
+    <h1>Project Parlay</h1>
+
+    <h4>Enter Pick Name (eg. Mike Trout 0.5 HR)</h4>
 
     <div class="form-group">
         <input type="text" id="userInput" placeholder="Enter name here">
@@ -102,6 +162,10 @@
     <!-- Pick Form -->
     <div id="popupForm">
         <p><strong>Name:</strong> <span id="popupNameDisplay"></span></p>
+
+        <label><strong>Prediction:</strong></label>
+        <label><input type="radio" name="globalPrediction" value="1" checked> Higher </label>
+        <label><input type="radio" name="globalPrediction" value="0"> Lower </label>
         <label>Odds: <input type="text" id="popupOdds"></label>
 
         <label><strong>Pick Type:</strong></label>
@@ -114,10 +178,10 @@
         </div>
 
         <label>Pick Origin:</label>
-        <label><input type="checkbox" name="pickOrigin" value="ChalkBoard PI"> ChalkBoard PI</label>
+        <label><input type="checkbox" name="pickOrigin" value="ChalkBoardPI"> ChalkBoard PI</label>
         <label><input type="checkbox" name="pickOrigin" value="HarryLock"> HarryLock</label>
-        <label><input type="checkbox" name="pickOrigin" value="DanGamble POD"> DanGamble POD</label>
-        <label><input type="checkbox" name="pickOrigin" value="DanGamble AI Edge"> DanGamble AI Edge</label>
+        <label><input type="checkbox" name="pickOrigin" value="DanGamblePOD"> DanGamble POD</label>
+        <label><input type="checkbox" name="pickOrigin" value="DanGambleAIEdge"> Dan GambleAI Edge</label>
         <label><input type="checkbox" name="pickOrigin" value="GameScript"> GameScript</label>
         <label><input type="checkbox" name="pickOrigin" value="Winible"> Winible</label>
         <label><input type="checkbox" name="pickOrigin" value="DoberMan"> DoberMan</label>
@@ -244,22 +308,26 @@
             document.querySelectorAll("input[name='pickOrigin']").forEach(cb => {
                 cb.addEventListener("change", function () {
                     const container = this.parentNode;
-                    let input = container.querySelector("input.origin-confidence");
 
                     if (this.checked) {
-                        if (!input) {
-                            input = document.createElement("input");
-                            input.type = "number";
-                            input.placeholder = "Confidence %";
-                            input.className = "origin-confidence";
-                            input.style.marginLeft = "8px";
-                            input.style.width = "80px";
-                            input.min = "0";
-                            input.max = "100";
-                            container.appendChild(input);
+                        // Add only the confidence input
+                        let confInput = container.querySelector("input.origin-confidence");
+                        if (!confInput) {
+                            confInput = document.createElement("input");
+                            confInput.type = "number";
+                            confInput.placeholder = "Confidence %";
+                            confInput.className = "origin-confidence";
+                            confInput.style.marginLeft = "8px";
+                            confInput.style.width = "80px";
+                            confInput.min = "0";
+                            confInput.max = "100";
+                            container.appendChild(confInput);
                         }
+
                     } else {
-                        if (input) container.removeChild(input);
+                        // Remove only the confidence input
+                        const confInput = container.querySelector("input.origin-confidence");
+                        if (confInput) confInput.remove();
                     }
                 });
             });
@@ -379,13 +447,41 @@
             }
 
             subparlays.forEach((column, i) => {
+                const wrapper = document.createElement("div");
+
+                // === Determine Top Label Logic ===
+                let topLabelText = "Standard"; // default
+                if (column.length >= 3) {
+                    const oddsList = column.map(p => parseFloat(p.odds));
+                    const meanOdds = oddsList.reduce((a, b) => a + b, 0) / oddsList.length;
+                    let votes = { Flex: 0, Standard: 0 };
+
+                    oddsList.forEach(odds => {
+                        if (odds - meanOdds >= 0.12) votes.Flex++;
+                        else if (meanOdds - odds >= 0.12) votes.Standard++;
+                    });
+
+                    if (votes.Flex > votes.Standard) topLabelText = "Flex";
+                    else topLabelText = "Standard";
+                }
+
+                // === Top Label ===
+                const topLabel = document.createElement("div");
+                topLabel.innerText = topLabelText;
+                topLabel.style.fontWeight = "bold";
+                topLabel.style.fontSize = "11px";
+                topLabel.style.textAlign = "center";
+                topLabel.style.marginBottom = "2px";
+                wrapper.appendChild(topLabel);
+
+                // === Picks Column ===
                 const colDiv = document.createElement("div");
                 colDiv.style.display = "flex";
                 colDiv.style.flexDirection = "column";
                 colDiv.style.border = "2px solid black";
                 colDiv.style.padding = "2px";
-                colDiv.style.width = "20px";   // fixed column width to fit grid nicely
-                colDiv.style.marginBottom = "8px";  // space between rows when wrapped
+                colDiv.style.width = "20px";
+                colDiv.style.marginBottom = "2px";
 
                 column.forEach(pick => {
                     const square = document.createElement("div");
@@ -393,7 +489,7 @@
                     square.style.backgroundColor = getConfidenceColor(pick.confidence || 0);
                     square.style.color = "white";
                     square.style.width = "100%";
-                    square.style.height = "7px";  // ¼ size
+                    square.style.height = "7px";
                     square.style.fontSize = "10px";
                     square.style.display = "flex";
                     square.style.alignItems = "center";
@@ -403,7 +499,17 @@
                     colDiv.appendChild(square);
                 });
 
-                grid.appendChild(colDiv);
+                wrapper.appendChild(colDiv);
+
+                // === Bottom Label ===
+                const bottomLabel = document.createElement("div");
+                bottomLabel.innerText = "None"; // placeholder
+                bottomLabel.style.fontSize = "10px";
+                bottomLabel.style.textAlign = "center";
+                bottomLabel.style.marginTop = "2px";
+                wrapper.appendChild(bottomLabel);
+
+                grid.appendChild(wrapper);
             });
 
             const pickType = document.querySelector("input[name='pickType']:checked")?.value;
@@ -412,6 +518,8 @@
                 renderStatTypeOptions(league);
             }
         }
+
+
 
 
 
@@ -521,6 +629,7 @@
 
         function getOriginsWithConfidence() {
             const originData = [];
+            const globalPrediction = parseInt(document.querySelector("input[name='globalPrediction']:checked").value);
 
             document.querySelectorAll("input[name='pickOrigin']:checked").forEach(cb => {
                 const container = cb.parentNode;
@@ -529,7 +638,8 @@
 
                 originData.push({
                     name: cb.value,
-                    confidence: conf  // Will be null if not filled in
+                    confidence: conf,
+                    prediction: globalPrediction  // shared for all selected experts
                 });
             });
 
@@ -547,6 +657,10 @@
             const pickType = document.querySelector("input[name='pickType']:checked")?.value;
             const playerTeam = document.getElementById("playerTeamInput").value.trim();
             const statType = document.querySelector("input[name='statType']:checked")?.value || "MoneyLine";
+            const predictionValue = document.querySelector("input[name='globalPrediction']:checked")?.value;
+            const totalCapital = parseFloat(document.getElementById("totalCapitalInput").value) || 0;
+
+
 
 
 
@@ -565,7 +679,8 @@
                 mutual_exclusion: mutualExclusion,
                 pick_type: pickType,
                 player_team: playerTeam || "None",
-                stat_type: statType
+                stat_type: statType,
+                prediction: parseInt(predictionValue)
 
             };
 
@@ -620,37 +735,163 @@
             });
         }
 
+        // function updateButtons(objects) {
+        //     const container = document.getElementById("objectButtonsContainer");
+        //     container.innerHTML = "";
+
+        //     objects.forEach(obj => {
+        //         const buttonWrapper = document.createElement("div");
+        //         // buttonWrapper.style.display = "flex";
+        //         // buttonWrapper.style.flexDirection = "column";
+        //         buttonWrapper.style.gap = "2px";
+
+        //         const btn = document.createElement("button");
+
+        //         const name = obj.name || "Unnamed";
+        //         const conf = obj.confidence !== null && obj.confidence !== undefined ? obj.confidence : "N/A";
+        //         const odds = obj.odds || "N/A";
+        //         const bayes_prob = obj.bayesian_prob || "N/A";
+        //         const logi_prob = obj.logistic_prob || "N/A";
+        //         const bayes_conf = obj.bayesian_conf || "N/A";
+        //         const logisticWeight = 1 - bayes_conf;
+
+
+        //         // Horizontal model influence bar
+        //         const blendBar = document.createElement("div");
+        //         blendBar.style.height = "6px";
+        //         blendBar.style.width = "100%";
+        //         blendBar.style.display = "flex";
+        //         blendBar.style.border = "1px solid #000";
+        //         blendBar.style.borderRadius = "2px";
+        //         blendBar.style.overflow = "hidden";
+
+        //         // Purple = Bayesian
+        //         const bayesDiv = document.createElement("div");
+        //         bayesDiv.style.width = `${bayes_conf * 100}%`;
+        //         bayesDiv.style.backgroundColor = "purple";
+
+        //         // Gold = Logistic
+        //         const logisticDiv = document.createElement("div");
+        //         logisticDiv.style.width = `${logisticWeight * 100}%`;
+        //         logisticDiv.style.backgroundColor = "gold";
+
+
+
+        //         btn.innerText = `${name} | odds: ${odds} | α Model: ${bayes_prob} | β Model: ${logi_prob} → Score: ${conf} `;
+        //         btn.style.backgroundColor = getConfidenceColor(conf);
+        //         btn.onclick = () => alert(`You clicked on ${obj.name}`);
+        //         buttonWrapper.appendChild(btn);
+
+        //         blendBar.appendChild(bayesDiv);
+        //         blendBar.appendChild(logisticDiv);
+        //         buttonWrapper.appendChild(blendBar);
+
+        //         const editBtn = document.createElement("button");
+        //         editBtn.innerText = "Edit";
+        //         editBtn.onclick = () => editObject(obj.id, obj);
+        //         buttonWrapper.appendChild(editBtn);
+
+        //         const deleteBtn = document.createElement("button");
+        //         deleteBtn.innerText = "Delete";
+        //         deleteBtn.onclick = () => deleteObject(obj.id);
+        //         buttonWrapper.appendChild(deleteBtn);
+
+        //         container.appendChild(buttonWrapper);
+        //     });
+        // }
+
         function updateButtons(objects) {
             const container = document.getElementById("objectButtonsContainer");
             container.innerHTML = "";
 
             objects.forEach(obj => {
-                const wrapper = document.createElement("div");
-                const btn = document.createElement("button");
+                const buttonWrapper = document.createElement("div");
+                buttonWrapper.style.display = "flex";
+                buttonWrapper.style.alignItems = "center";
+                buttonWrapper.style.gap = "8px";
+                buttonWrapper.style.marginBottom = "6px";
+                buttonWrapper.style.flexWrap = "nowrap";
 
                 const name = obj.name || "Unnamed";
                 const conf = obj.confidence !== null && obj.confidence !== undefined ? obj.confidence : "N/A";
                 const odds = obj.odds || "N/A";
+                const bayes_prob = obj.bayesian_prob || "N/A";
+                const logi_prob = obj.logistic_prob || "N/A";
+                const bayes_conf = obj.bayesian_conf || 0.5;
+                const logisticWeight = 1 - bayes_conf;
 
+                // Create pick button (styled div)
+                const pickBtn = document.createElement("div");
+                pickBtn.className = "pick-button";
+                pickBtn.style.backgroundColor = getConfidenceColor(conf);
+                pickBtn.style.border = "1px solid black";
+                pickBtn.style.padding = "8px 12px 14px";
+                pickBtn.style.display = "inline-block";
+                pickBtn.style.position = "relative";
+                pickBtn.style.fontFamily = "monospace";
+                pickBtn.style.fontSize = "14px";
+                pickBtn.style.whiteSpace = "nowrap";
+                pickBtn.style.overflow = "hidden";
+                pickBtn.style.flexGrow = "1";
+                pickBtn.style.minWidth = "0";
+                pickBtn.style.maxWidth = "100%";
+                pickBtn.style.cursor = "pointer";
 
-                btn.innerText = `${name} | ${odds} | → Score: ${conf} `;
-                btn.style.backgroundColor = getConfidenceColor(conf);
-                btn.onclick = () => alert(`You clicked on ${obj.name}`);
-                wrapper.appendChild(btn);
+                // Create prediction text
+                const textLine = document.createElement("div");
+                textLine.innerHTML = `
+                    <b>${name}</b><br>
+                    odds: ${odds} | α Model: ${bayes_prob} | β Model: ${logi_prob} → <b>Score: ${conf}</b> 
+                    `;   
+                    pickBtn.appendChild(textLine);
 
+                // Create contribution bar
+                const blendBar = document.createElement("div");
+                blendBar.style.height = "6px";
+                blendBar.style.width = "100%";
+                blendBar.style.display = "flex";
+                blendBar.style.border = "1px solid #000";
+                blendBar.style.borderRadius = "2px";
+                blendBar.style.overflow = "hidden";
+                blendBar.style.marginTop = "4px";
+
+                const bayesDiv = document.createElement("div");
+                bayesDiv.style.width = `${bayes_conf * 100}%`;
+                bayesDiv.style.backgroundColor = "purple";
+
+                const logisticDiv = document.createElement("div");
+                logisticDiv.style.width = `${logisticWeight * 100}%`;
+                logisticDiv.style.backgroundColor = "gold";
+
+                blendBar.appendChild(bayesDiv);
+                blendBar.appendChild(logisticDiv);
+                pickBtn.appendChild(blendBar);
+
+                pickBtn.onclick = () => alert(`You clicked on ${obj.name}`);
+                buttonWrapper.appendChild(pickBtn);
+
+                // Edit button
                 const editBtn = document.createElement("button");
                 editBtn.innerText = "Edit";
+                editBtn.style.flexShrink = "0";
                 editBtn.onclick = () => editObject(obj.id, obj);
-                wrapper.appendChild(editBtn);
+                buttonWrapper.appendChild(editBtn);
 
+                // Delete button
                 const deleteBtn = document.createElement("button");
                 deleteBtn.innerText = "Delete";
+                deleteBtn.style.flexShrink = "0";
                 deleteBtn.onclick = () => deleteObject(obj.id);
-                wrapper.appendChild(deleteBtn);
+                buttonWrapper.appendChild(deleteBtn);
 
-                container.appendChild(wrapper);
+                container.appendChild(buttonWrapper);
             });
         }
+
+
+
+
+
 
         function editObject(id, currentObj) {
             isEditing = true;

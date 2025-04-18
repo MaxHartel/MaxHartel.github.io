@@ -8,6 +8,7 @@ from itertools import combinations
 from HandicapperAccuracy.ConfidenceDB_Port import submit_event, generate_event_id
 from datetime import datetime
 import sqlite3
+from HandicapperAccuracy.HandiCapperAccuracyModel import main_model
 
 app = Flask(__name__)
 
@@ -21,10 +22,10 @@ DB_PATH = "/Users/maxhartel/Desktop/Desktop - Max’s MacBook Pro/Project Parlay
 
 
 origin_profiles = {
-    "ChalkBoard PI": 0.80,
+    "ChalkBoardPI": 0.80,
     "HarryLock": 0.71,
-    "DanGamble POD": 0.78,
-    "DanGamble AI Edge": 90.0,
+    "DanGamblePOD": 0.78,
+    "DanGambleAIEdge": 90.0,
     "GameScript": 0.80,
     "Winible": 0.83,
     "DoberMan": 0.76,
@@ -59,7 +60,10 @@ def index():
 @app.route("/optimize_split", methods=["GET"])
 def optimize_split():
     sorted_picks = sorted(pick_objects, key=lambda x: getattr(x, "confidence_score", 0), reverse=True)
+    print("Picks:" + str(sorted_picks))
     best_score, best_label = analyze_all_splits(sorted_picks)
+    #total_capital = request.json.get("total_capital", 0)
+
 
     if "Full List" in best_label:
         picks_to_use = sorted_picks
@@ -132,18 +136,46 @@ def process():
             except Exception as e:
                 used_conf = 75.0  # fallback if None or not a number
 
-            # 🧠 Historical accuracy
-            origin_accuracy = origin_profiles[origin]() if callable(origin_profiles[origin]) else origin_profiles[origin]
+            # 🔧 Normalize the origin key by removing spaces
+            origin_key = origin.replace(" ", "")
+
+            if origin_key not in origin_profiles:
+                raise KeyError(f"Origin key '{origin_key}' not found in origin_profiles")
+
+            origin_accuracy = origin_profiles[origin_key]() if callable(origin_profiles[origin_key]) else origin_profiles[origin_key]
+
 
             norm_conf = used_conf / 100.0
-            expert_predictions.append((origin, 1, norm_conf))
+            # Extract shared prediction direction
+            prediction = int(data.get("prediction", 1))  # 1 = Higher, 0 = Lower
 
-            # 🧮 Confidence score calculation
-            score = confidence_score(odds, used_conf, origin_accuracy)
-            total_score += score
+            for origin_obj in pick_origins:
+                origin = origin_obj.get("name")
+                origin_conf = origin_obj.get("confidence")
 
-        final_score = round(total_score / len(expert_predictions), 2) if expert_predictions else 0
-        print(final_score)
+                if not origin:
+                    continue  # Skip invalid entries
+
+                # 💡 Ensure origin_conf is a usable float
+                try:
+                    used_conf = float(origin_conf)
+                except Exception:
+                    used_conf = 75.0  # fallback if None or not a number
+
+                # 🧠 Historical accuracy
+                origin_accuracy = origin_profiles[origin]() if callable(origin_profiles[origin]) else origin_profiles[origin]
+
+                norm_conf = used_conf / 100.0
+
+                # ⬅️ Use the shared prediction value for all experts
+                expert_predictions.append((origin, prediction, norm_conf))
+
+                # 🧮 Confidence score calculation
+                score = confidence_score(odds, used_conf, origin_accuracy)
+                total_score += score
+
+        # final_score = round(total_score / len(expert_predictions), 2) if expert_predictions else 0
+        # print(final_score)
 
         if pick_type == "MoneyLine":
             team_a = name
@@ -160,20 +192,94 @@ def process():
 
         for league in leagues:
             event_id = generate_event_id(name, league)
-            success, message = submit_event(
-                event_id=event_id,
-                event_date=today,
-                league=league,
-                team_a=team_a,
-                team_b=team_b,
-                crowd_probability=implied_prob,
-                expert_predictions=expert_predictions,
-                actual_result=None,
-                pick_type=pick_type,
-                player_team=player_team,
-                stat_type=stat_type
-            )
+            # Check if the event already exists
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1 FROM events WHERE event_id = ?", (event_id,))
+            exists = cursor.fetchone() is not None
+            conn.close()
+
+            if not exists:
+                # Insert event & predictions as usual
+                success, message = submit_event(
+                    event_id=event_id,
+                    event_date=today,
+                    league=league,
+                    team_a=team_a,
+                    team_b=team_b,
+                    crowd_probability=implied_prob,
+                    expert_predictions=expert_predictions,
+                    actual_result=None,
+                    pick_type=pick_type,
+                    player_team=player_team,
+                    stat_type=stat_type
+                )
+            else:
+                # Just insert additional expert predictions and update crowd prob
+                try:
+                    conn = sqlite3.connect(DB_PATH)
+                    cursor = conn.cursor()
+
+                    # ✅ Update crowd_probability (optional)
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO crowd_predictions (event_id, crowd_probability)
+                        VALUES (?, ?)
+                    """, (event_id, implied_prob))
+
+                    # ✅ Append new expert predictions
+                    for expert_name, prediction, confidence in expert_predictions:
+                        cursor.execute("""
+                            INSERT INTO expert_predictions (event_id, expert_name, prediction, confidence)
+                            VALUES (?, ?, ?, ?)
+                        """, (event_id, expert_name, prediction, confidence))
+
+                        # Ensure expert exists in reliability table
+                        cursor.execute("SELECT 1 FROM expert_reliability WHERE expert_name = ?", (expert_name,))
+                        if not cursor.fetchone():
+                            cursor.execute("""
+                                INSERT INTO expert_reliability (expert_name)
+                                VALUES (?)
+                            """, (expert_name,))
+
+                    conn.commit()
+                    conn.close()
+                    success = True
+                    message = "Existing event updated with new expert predictions."
+
+                except Exception as e:
+                    success = False
+                    message = f"Error updating existing event: {e}"
+
             status_messages.append(f"[{league}] {message}")
+
+            #----USE ML MODEL TO ANALYZE PICK-------
+            prediction_result = main_model(event_id)
+            ml_prob = prediction_result["combined_prob"]
+            logistic_prob = prediction_result["logistic_prob"]
+            bayesian_prob = prediction_result["bayesian_prob"]
+            bayesian_conf = prediction_result["quality_score"]
+
+
+            # Calculate implied probability
+            implied_prob = round(1 / odds, 4)
+            print("IP:" + str(implied_prob))
+
+            # Step 1: Compute raw difference
+            raw_score = ml_prob - implied_prob  # can range from -1 to +1
+
+            print("RS:"+ str(raw_score))
+
+            # Step 2: Clamp to ±0.2 range
+            clamped_score = max(min(raw_score, 0.2), -0.2)
+
+            print("CS:"+ str(clamped_score))
+
+            # Step 3: Scale to 0–100
+            scaled_score = round((clamped_score + 0.2) / 0.4 * 100)
+
+            print("FS:"+ str(scaled_score))
+
+            final_score = scaled_score  # this is now an int from 0 to 100
 
             print("odds:" + str(odds))
 
@@ -185,6 +291,10 @@ def process():
                     mutual_exclusion_group=mutual_exclusion,
                     league=league,
                     event_id=event_id,
+                    bayesian_prob =bayesian_prob, 
+                    logistic_prob=logistic_prob, 
+                    bayesian_conf=bayesian_conf,
+                    stat_type=stat_type,
                     reusable=reusable,
                     capital_limit=capital_limit
                 )
@@ -274,11 +384,12 @@ def edit():
             for origin_obj in pick_origins:
                 origin = origin_obj.get("name")
                 origin_conf = origin_obj.get("confidence", None)
+                prediction = origin_obj.get("prediction", 1)  # default to Higher
 
                 origin_accuracy = origin_profiles[origin]() if callable(origin_profiles[origin]) else origin_profiles[origin]
                 norm_conf = origin_conf / 100 if origin_conf is not None else None
 
-                expert_predictions.append((origin, 1, norm_conf))
+                expert_predictions.append((origin, prediction, norm_conf))
 
                 used_conf = origin_conf if origin_conf is not None else 75.0
                 score = confidence_score(odds, used_conf, origin_accuracy)
@@ -365,7 +476,39 @@ def submit_verified():
     for item in verified:
         localID+=1
         pick_id = localID
-        actual_result = item["actual_result"]
+        
+
+        # Assume item["actual_result"] is 1 if user marked it "Verified"
+        user_verification = item["actual_result"]
+
+        # Find pick object by ID
+        pick = next((p for p in pick_objects if hasattr(p, "pID") and p.pID == pick_id), None)
+        if not pick:
+            print(f"❌ Pick ID {pick_id} not found in memory.")
+            continue
+
+        event_id = getattr(pick, "event_id", None)
+        if not event_id:
+            print(f"❌ Pick ID {pick_id} has no event_id.")
+            continue
+
+        # 🔍 Interpret prediction direction:
+        #  - If expert said "Higher" and user marked as 1 → event happened ✅
+        #  - If expert said "Lower" and user marked as 1 → event did NOT happen ❌
+        # We’ll default to the first expert’s prediction signal (they’re all assumed to match)
+        cursor.execute("SELECT prediction FROM expert_predictions WHERE event_id = ? LIMIT 1", (event_id,))
+        row = cursor.fetchone()
+
+        if row:
+            expert_prediction = row[0]  # 1 = Higher, 0 = Lower
+
+            if expert_prediction == 1:  # Higher = event is expected to occur
+                actual_result = 1 if user_verification == 1 else 0
+            else:  # Lower = expert expects event NOT to occur
+                actual_result = 0 if user_verification == 1 else 1
+        else:
+            print(f"⚠️ No expert prediction found for {event_id}, assuming default.")
+            actual_result = user_verification
         event_id = get_event_id_from_pick_id(pick_id)
         print(event_id)
 
@@ -406,7 +549,6 @@ def submit_verified():
 
 
 
-
 @app.route("/load_sample_picks", methods=["POST"])
 def load_sample_picks():
     global pick_objects
@@ -414,43 +556,61 @@ def load_sample_picks():
 
     num_picks = 8
     example_names = ["Lakers ML", "Yankees -1.5", "Chiefs +3", "Over 8.5", "Under 220", "Dodgers ML", "Ravens -2.5", "Heat +6", "Bills ML", "Nets Over 230"]
-    origins = ["Model", "Gut", "Trend", "Public", "Sharp", "Me"]
     leagues = ["NBA", "NFL", "MLB", "NHL"]
 
     for i in range(num_picks):
         name = random.choice(example_names) + f" #{i+1}"
-        confidence = random.randint(40, 99)
-        odds = round(random.uniform(1.5, 2.5), 2)
-        pick_origin = random.sample(origins, k=random.randint(1, 3))
-        league = random.sample(leagues, k=random.randint(1, 2))
+        odds = round(random.uniform(1.05, 2.5), 2)
+        mutual_exclusion_group = random.randint(0, 5)
+        league = random.choice(leagues)
         reusable = random.choice([True, False])
         capital_limit = random.randint(10, 100)
+        stat_type = "MoneyLine"
+        event_id = f"SAMPLE-{i+1}"
 
-        # Simple implied confidence score for testing
+        # Generate synthetic model probabilities
+        bayesian_prob = round(random.uniform(0.4, 0.9), 2)
+        logistic_prob = round(random.uniform(0.4, 0.9), 2)
+        bayesian_conf = round(random.uniform(0.5, 0.9), 2)
+
+        # Calculate final confidence score using model-weighted blend
+        combined_prob = round(
+            bayesian_conf * bayesian_prob + (1 - bayesian_conf) * logistic_prob, 4
+        )
         implied_prob = 1 / odds
-        expert_conf = confidence / 100
-        expert_acc = random.uniform(0.5, 0.9)
-        score = round(100 * (expert_acc * expert_conf + (1 - expert_acc) * implied_prob), 2)
+        raw_score = combined_prob - implied_prob
+        clamped = max(min(raw_score, 0.2), -0.2)
+        scaled_score = round((clamped + 0.2) / 0.4 * 100, 2)
 
-        pick_objects.append({
-            "id": i + 1,
-            "name": name,
-            "confidence": confidence,
-            "odds": odds,
-            "pick_origin": pick_origin,
-            "league": league,
-            "reusable": reusable,
-            "capital_limit": capital_limit,
-            "confidence_score": score
-        })
+        # Create Pick object
+        new_pick = Pick(
+            name=name,
+            odds=odds,
+            confidence=scaled_score,
+            mutual_exclusion_group=mutual_exclusion_group,
+            league=league,
+            event_id=event_id,
+            bayesian_prob=bayesian_prob,
+            logistic_prob=logistic_prob,
+            bayesian_conf=bayesian_conf,
+            stat_type=stat_type,
+            reusable=reusable,
+            capital_limit=capital_limit
+        )
 
-    return jsonify({"message": f"{num_picks} sample picks loaded.", "objects": pick_objects})
+        pick_objects.append(new_pick)
+
+    return jsonify({
+        "message": f"{num_picks} sample picks loaded.",
+        "objects": [p.to_dict() for p in pick_objects]
+    })
 
 
 @app.route("/clear_picks", methods=["POST"])
 def clear_picks():
     global pick_objects
     pick_objects = []
+    Pick.pID_counter = 0  # reset ID counter
 
     # Optional: clear optimizer results too if you're storing those separately
     # e.g., if you eventually save best_score or best_label in global vars

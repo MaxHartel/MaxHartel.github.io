@@ -8,7 +8,7 @@ class Pick:
         cls.pID_counter += 1
         return cls.pID_counter
 
-    def __init__(self, name,odds, confidence, mutual_exclusion_group, league, event_id, reusable=True, capital_limit=0):
+    def __init__(self, name,odds, confidence, mutual_exclusion_group, league, event_id,bayesian_prob, logistic_prob, bayesian_conf, stat_type="MoneyLine",reusable=True, capital_limit=0):
         self.pID = Pick.pickID()
         self.gameID = mutual_exclusion_group
         self.name = name
@@ -18,6 +18,10 @@ class Pick:
         self.reusable = reusable
         self.capital_limit = int(capital_limit)
         self.event_id = event_id
+        self.stat_type = stat_type 
+        self.bayesian_prob = bayesian_prob
+        self.logistic_prob = logistic_prob
+        self.bayesian_conf = bayesian_conf
 
     def to_dict(self):
         return {
@@ -30,6 +34,10 @@ class Pick:
             "reusable": self.reusable,
             "capital_limit": self.capital_limit,
             "event_id": self.event_id,
+            "stat_type": self.stat_type,
+            "bayesian_prob": self.bayesian_prob,
+            "logistic_prob": self.logistic_prob,
+            "bayesian_conf": self.bayesian_conf
         }
 
 class BoostPromo:
