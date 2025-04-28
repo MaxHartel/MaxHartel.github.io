@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 from typing import Optional, List, Tuple
+from NBA_player_log_scraper import fetch_and_store_player_season
 
 DB_PATH = "/Users/maxhartel/Desktop/Desktop - Max’s MacBook Pro/Project Parlay/Project-Parlay/Pick_Confidence" 
 
@@ -18,6 +19,95 @@ def add_event(event_id: str, event_date: str, league: str, team_a: str, team_b: 
     """, (event_id, event_date, league, team_a, team_b, actual_result))
     conn.commit()
     conn.close()
+
+
+def insert_player_stat_entry(
+    player_name: str,
+    game_date: str,
+    league: str,
+    team: Optional[str] = None,
+    opponent: Optional[str] = None,
+    points: Optional[float] = None,
+    rebounds: Optional[float] = None,
+    assists: Optional[float] = None,
+    personal_fouls: Optional[float] = None,
+    threes_made: Optional[float] = None,
+    blocks: Optional[float] = None,
+    steals: Optional[float] = None,
+    turnovers: Optional[float] = None,
+    minutes: Optional[float] = None
+):
+    """
+    Insert a single player stat entry into the player_stats table.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO player_stats (
+            player_name, game_date, league, team, opponent,
+            points, rebounds, assists, personal_fouls, threes_made,
+            blocks, steals, turnovers, minutes
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        player_name, game_date, league, team, opponent,
+        points, rebounds, assists, personal_fouls, threes_made,
+        blocks, steals, turnovers, minutes
+    ))
+
+    conn.commit()
+    conn.close()
+    print(f"✅ Inserted player stat for {player_name} on {game_date}.")
+
+
+def update_player_stats_with_derived_fields():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Fetch all players and their stats
+    cursor.execute("""
+        SELECT entry_id, points, rebounds, assists, blocks, steals, turnovers
+        FROM player_stats
+    """)
+    rows = cursor.fetchall()
+
+    for row in rows:
+        entry_id, points, rebounds, assists, blocks, steals, turnovers = row
+
+        # Handle possible NULLs by treating them as 0
+        points = points or 0
+        rebounds = rebounds or 0
+        assists = assists or 0
+        blocks = blocks or 0
+        steals = steals or 0
+        turnovers = turnovers or 0
+
+        pa = points + assists
+        pr = points + rebounds
+        ra = rebounds + assists
+        pra = points + rebounds + assists
+
+        fantasy_points = (
+            points * 1 +
+            rebounds * 1.2 +
+            assists * 1.5 +
+            blocks * 3 +
+            steals * 3 +
+            turnovers * (-1)
+        )
+
+        # Update the row
+        cursor.execute("""
+            UPDATE player_stats
+            SET pa = ?, pr = ?, ra = ?, pra = ?, fantasy_points = ?
+            WHERE entry_id = ?
+        """, (pa, pr, ra, pra, fantasy_points, entry_id))
+
+    conn.commit()
+    conn.close()
+    print("✅ Player stats updated with PA, PR, RA, PRA, and Fantasy Points.")
+
 
 
 def add_crowd_prediction(event_id: str, crowd_probability: float, source_name: str = "CrowdConsensus"):
@@ -195,3 +285,5 @@ example_event = {
 #submit_event(**example_event)
 #delete_event("2025-04-12-NBA-NYK-MIA")
 
+#fetch_and_store_player_season("Tyler Herro", datetime(2024, 10, 23), datetime(2025, 4, 13))
+update_player_stats_with_derived_fields()

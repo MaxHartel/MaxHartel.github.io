@@ -8,7 +8,11 @@ from scipy.special import expit  # sigmoid
 from scipy.optimize import curve_fit
 
 DB_PATH = "/Users/maxhartel/Desktop/Desktop - Max’s MacBook Pro/Project Parlay/Project-Parlay/Pick_Confidence"
-
+STAT_COLUMNS = [
+    "points", "rebounds", "assists", "personal_fouls",
+    "threes_made", "blocks", "steals", "turnovers", "minutes",
+    "pa", "pr", "ra", "pra", "fantasy_points"
+]
 
 
 def crowd_log_odds(p: float) -> float:
@@ -235,7 +239,66 @@ def bayesian_ensemble_prediction(
     posterior_prob = odds / (1 + odds)
     return round(posterior_prob, 4)
 
+def get_all_players():
+    """
+    Fetches all distinct player names from player_stats table.
+    """
+    conn = connect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT player_name FROM player_stats")
+    players = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return players
 
+def fetch_player_game_logs(player_name: str):
+    """
+    Fetches all available game logs for a given player into a DataFrame.
+    """
+    conn = connect()
+    query = f"""
+        SELECT {', '.join(STAT_COLUMNS)}
+        FROM player_stats
+        WHERE player_name = ?
+    """
+    df = pd.read_sql_query(query, conn, params=(player_name,))
+    conn.close()
+    return df
+
+def compute_player_distribution(player_name: str):
+    """
+    Computes the mean vector and covariance matrix for a single player's stats.
+    Returns a dictionary with mean and covariance.
+    """
+    df = fetch_player_game_logs(player_name)
+
+    if len(df) < 5:  # minimum games required (you can adjust)
+        print(f"⚠️ Not enough games to build distribution for {player_name}")
+        return None
+
+    means = df.mean().values
+    covariance = df.cov().values
+
+    return {
+        "player_name": player_name,
+        "mean_vector": means,
+        "covariance_matrix": covariance
+    }
+
+def build_all_player_distributions():
+    """
+    Builds distributions for all players with enough data.
+    Returns a dictionary { player_name → {mean_vector, covariance_matrix} }
+    """
+    players = get_all_players()
+    player_models = {}
+
+    for player in players:
+        model = compute_player_distribution(player)
+        if model:
+            player_models[player] = model
+
+    print(f"✅ Built distributions for {len(player_models)} players.")
+    return player_models
 
 
 def get_expert_stats(expert_name):
@@ -294,7 +357,7 @@ def fetch_all_events():
     event_data = []
     for event_id, crowd_prob, actual in events:
         cursor.execute("""
-            SELECT expert_name, prediction, confidence
+            SELECT expert_name, prediction, confidence, stat_threshold
             FROM expert_predictions
             WHERE event_id = ?
         """, (event_id,))
@@ -606,5 +669,5 @@ def main_model(event_id):
     return result
 
 
-main_model("2025-03-25-NBA-AMENTHOMPSON8Rebounds")
+#main_model("2025-03-25-NBA-AMENTHOMPSON8Rebounds")
 
