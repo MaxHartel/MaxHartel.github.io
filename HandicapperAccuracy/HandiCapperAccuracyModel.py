@@ -6,6 +6,7 @@ from typing import List, Tuple, Optional, Dict
 from sklearn.linear_model import LogisticRegression
 from scipy.special import expit  # sigmoid
 from scipy.optimize import curve_fit
+import mysql.connector
 
 DB_PATH = "/Users/maxhartel/Desktop/Desktop - Max’s MacBook Pro/Project Parlay/Project-Parlay/Pick_Confidence"
 STAT_COLUMNS = [
@@ -20,6 +21,8 @@ def crowd_log_odds(p: float) -> float:
     p = max(min(p, 0.999), 0.001)  # avoid division by zero
     return math.log(p / (1 - p))
 
+
+#### SQLite Version ####
 def connect():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
 
@@ -250,39 +253,117 @@ def get_all_players():
     conn.close()
     return players
 
-def fetch_player_game_logs(player_name: str):
+
+
+
+###### SQLite Version #########
+# def fetch_player_game_logs(player_name: str):
+#     """
+#     Fetches all available game logs for a given player into a DataFrame.
+#     """
+#     conn = connect()
+#     query = f"""
+#         SELECT {', '.join(STAT_COLUMNS)}
+#         FROM player_stats
+#         WHERE player_name = ?
+#     """
+#     df = pd.read_sql_query(query, conn, params=(player_name,))
+#     conn.close()
+#     return df
+
+
+
+#### MySQL Version #######
+def fetch_player_game_logs(player_name: str, league: str, connection) -> pd.DataFrame:
     """
-    Fetches all available game logs for a given player into a DataFrame.
+    Fetches all available game logs for a given player from the appropriate MySQL league table.
     """
-    conn = connect()
+    table = f"{league}_Player_Logs"  # e.g., NBA_Player_Logs
+
     query = f"""
-        SELECT {', '.join(STAT_COLUMNS)}
-        FROM player_stats
-        WHERE player_name = ?
+        SELECT *
+        FROM {table}
+        WHERE player_name = %s
+        ORDER BY game_date ASC
     """
-    df = pd.read_sql_query(query, conn, params=(player_name,))
-    conn.close()
+
+    df = pd.read_sql(query, con=connection, params=(player_name,))
     return df
 
-def compute_player_distribution(player_name: str):
-    """
-    Computes the mean vector and covariance matrix for a single player's stats.
-    Returns a dictionary with mean and covariance.
-    """
-    df = fetch_player_game_logs(player_name)
 
-    if len(df) < 5:  # minimum games required (you can adjust)
+
+
+###### SQLite Version ########
+# def compute_player_distribution(player_name: str):
+#     """
+#     Computes the mean vector and covariance matrix for a single player's stats.
+#     Returns a dictionary with mean and covariance.
+#     """
+#     df = fetch_player_game_logs(player_name)
+
+#     if len(df) < 5:  # minimum games required (you can adjust)
+#         print(f"⚠️ Not enough games to build distribution for {player_name}")
+#         return None
+
+#     means = df.mean().values
+#     covariance = df.cov().values
+
+#     return {
+#         "player_name": player_name,
+#         "mean_vector": means,
+#         "covariance_matrix": covariance
+
+#     }
+
+
+
+####### MySQL Version  ########
+def compute_player_distribution(player_name: str, league: str, connection) -> Optional[Dict]:
+    """
+    Computes the mean vector and covariance matrix for a single player's stats from a MySQL database.
+    Includes same-day teammate stats in the covariance matrix.
+    """
+    table = f"{league}_Player_Logs"
+
+    # Step 1: Fetch all player game logs
+    player_df = fetch_player_game_logs(player_name, league, connection)
+
+    if len(player_df) < 5:
         print(f"⚠️ Not enough games to build distribution for {player_name}")
         return None
 
-    means = df.mean().values
-    covariance = df.cov().values
+    # Step 2: For each game, fetch teammate stats
+    all_rows = []
+    for _, row in player_df.iterrows():
+        game_date = row["game_date"]
+        team = row["team"]
+
+        teammate_query = f"""
+            SELECT *
+            FROM {table}
+            WHERE game_date = %s AND team = %s AND player_name != %s
+        """
+        teammates = pd.read_sql(teammate_query, con=connection, params=(game_date, team, player_name))
+        combined = pd.concat([pd.DataFrame([row]), teammates], ignore_index=True)
+        all_rows.append(combined)
+
+    combined_df = pd.concat(all_rows, ignore_index=True)
+
+    # Step 3: Filter to numeric-only columns and compute stats
+    numeric_df = combined_df.select_dtypes(include="number")
+
+    means = numeric_df.mean().values
+    covariance = numeric_df.cov().values
 
     return {
         "player_name": player_name,
         "mean_vector": means,
         "covariance_matrix": covariance
     }
+
+
+
+
 
 def build_all_player_distributions():
     """
