@@ -3,11 +3,16 @@ from ppObjects import Pick, BoostPromo, ProtectedPromo
 from RROptimizer import analyze_all_splits
 import json
 import os
+import sys
 import random
 from itertools import combinations
 from HandicapperAccuracy.ConfidenceDB_Port import submit_event, generate_event_id
 from datetime import datetime
 import sqlite3
+
+# Add the HandicapperAccuracy folder to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'HandicapperAccuracy')))
+
 from HandicapperAccuracy.HandiCapperAccuracyModel import main_model
 
 app = Flask(__name__)

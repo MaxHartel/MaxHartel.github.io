@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 from typing import Optional, List, Tuple
-from NBA_player_log_scraper import fetch_and_store_player_season
+#from NBA_player_log_scraper import fetch_and_store_player_season
 
 DB_PATH = "/Users/maxhartel/Desktop/Desktop - Max’s MacBook Pro/Project Parlay/Project-Parlay/Pick_Confidence" 
 
